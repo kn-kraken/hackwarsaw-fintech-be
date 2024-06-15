@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  postgis:
+    build: ./db
+    container_name: masovian
+    environment:
+      POSTGRES_DB: gis
+      POSTGRES_USER: gisuser
+      POSTGRES_PASSWORD: gispassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+volumes:
+  postgis_data:
