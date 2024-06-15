@@ -1,2 +1,5 @@
 run:
-  go run ./cmd/fintechbe
+  go run ./cmd/api
+
+scrap:
+  go run ./cmd/scrapper

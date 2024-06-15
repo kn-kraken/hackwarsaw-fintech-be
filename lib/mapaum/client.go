@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/headzoo/surf"
 	"github.com/headzoo/surf/browser"
 )
@@ -33,7 +34,7 @@ func New() (*Client, error) {
 	return client, nil
 }
 
-func (r *Client) ListRealEstates(page int, pageSize int) ([]RealEstate, error) {
+func (r *Client) ListRealEstates(page int, pageSize int) (*goquery.Selection, error) {
 	form := url.Values{}
 	form.Add("javax.faces.partial.ajax", "true")
 	form.Add("javax.faces.source", "form1:dataTable1")
@@ -59,7 +60,5 @@ func (r *Client) ListRealEstates(page int, pageSize int) ([]RealEstate, error) {
 		log.Fatal(err)
 	}
 
-	log.Println(r.bow.Body())
-
-	return []RealEstate{}, nil
+  return r.bow.Dom(), nil
 }
