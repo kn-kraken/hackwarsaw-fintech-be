@@ -3,8 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log/slog"
+
+	"github.com/gin-gonic/gin/binding"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -52,10 +54,11 @@ func (r *Database) Close() {
 	r.db.Close()
 }
 
-func (r *Database) ListBusinessesInArea() ([]Business, error) {
+func (r *Database) ListBusinessesInArea(btype BusinessType) ([]Business, error) {
 	const query = `
 SELECT
     name,
+    UPPER(COALESCE(shop, amenity)) AS type,
     ST_X(ST_Transform(way, 4326)) AS lon,
     ST_Y(ST_Transform(way, 4326)) AS lat,
     ST_Distance(
@@ -70,11 +73,11 @@ WHERE
         1000
     )
     AND name != ''
-    AND shop = 'greengrocer'
+    AND UPPER(shop) = $1
 ORDER BY distance;
 `
 
-	rows, err := r.db.Query(query)
+	rows, err := r.db.Query(query, btype)
 	if err != nil {
 		return nil, fmt.Errorf("running query: %w", err)
 	}
@@ -85,6 +88,7 @@ ORDER BY distance;
 		var business Business
 
 		err = rows.Scan(&business.Name,
+			&business.Type,
 			&business.Location.Longitude,
 			&business.Location.Latitude,
 			&business.Distance,
@@ -93,7 +97,14 @@ ORDER BY distance;
 			slog.Error("scanning row", err)
 		}
 
+		err = binding.Validator.ValidateStruct(business)
+		if err != nil {
+			slog.Error("validating", "error", err)
+      continue
+		}
+
 		result = append(result, business)
 	}
+
 	return result, nil
 }
