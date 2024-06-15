@@ -165,7 +165,8 @@ SELECT
    area          ,
    initial_price ,
    district      
-FROM real_estates;
+FROM real_estates
+LIMIT 25;
 `
 	rows, err := r.db.Query(query)
 	if err != nil {
