@@ -31,7 +31,7 @@ type Location struct {
 
 type RealEstate struct {
 	Address  string   `json:"address"`
-	Score    Location `json:"score"`
+	Score    float32  `json:"score"`
 	Area     float32  `json:"area"`
 	Location Location `json:"location"`
 }
@@ -39,8 +39,27 @@ type RealEstate struct {
 func NewRealEstateScores(businesses []db.Business) RealEstateScores {
 	businessesDto := utils.MapRef(businesses, NewBusiness)
 	return RealEstateScores{
-		Businesses:  businessesDto,
-		RealEstates: []RealEstate{},
+		Businesses: businessesDto,
+		RealEstates: []RealEstate{
+			{
+				Address: "Dupa",
+				Score:   0.53,
+				Area:    93.12,
+				Location: Location{
+					Longitude: 21.13893,
+					Latitude:  52.280427,
+				},
+			},
+			{
+				Address: "Dupa",
+				Score:   0.21,
+				Area:    54.22,
+				Location: Location{
+					Longitude: 21.13993,
+					Latitude:  52.280327,
+				},
+			},
+		},
 	}
 }
 
