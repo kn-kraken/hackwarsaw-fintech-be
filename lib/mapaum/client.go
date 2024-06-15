@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
@@ -22,7 +23,9 @@ type Client struct {
 }
 
 func New() (*Client, error) {
-	ctx, cancel := chromedp.NewContext(context.Background())
+	// ctx, _ := chromedp.NewExecAllocator(context.Background(), append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", false))...)
+  ctx := context.Background()
+	ctx, cancel := chromedp.NewContext(ctx)
 
 	err := chromedp.Run(
 		ctx,
@@ -42,22 +45,24 @@ func (r *Client) Close() {
 }
 
 func (r *Client) ListRealEstates() (chan (RealEstate), error) {
-	var currentPage string
+	var currentPageStr string
 
 	err := chromedp.Run(
 		r.ctx,
 		chromedp.WaitVisible(".ui-paginator-page.ui-state-active"),
-		chromedp.Text(".ui-paginator-page.ui-state-active", &currentPage),
+		chromedp.Text(".ui-paginator-page.ui-state-active", &currentPageStr),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("reading page: %w", err)
 	}
 
-	if currentPage != "1" {
+	currentPage, err := strconv.Atoi(currentPageStr)
+
+	if currentPage != 1 {
 		err = chromedp.Run(
 			r.ctx,
 			chromedp.Click(".ui-paginator-first"),
-      chromedp.WaitVisible(".ui-paginator-page.ui-state-active:nth-child(1)"),
+			chromedp.WaitVisible(".ui-paginator-page.ui-state-active:nth-child(1)"),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("skipping to first page: %w", err)
@@ -68,15 +73,7 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 
 	impl := func() {
 		for {
-
-      err = chromedp.Run(
-        r.ctx,
-        chromedp.Click(".ui-paginator-first"),
-        chromedp.WaitVisible(".ui-paginator-page.ui-state-active:nth-child(1)"),
-      )
-      if err != nil {
-        slog.Error("waiting for page to load", "error", err)
-      }
+			slog.Info("scrapping next page", "page", currentPage)
 
 			var streets []*cdp.Node
 			var occurenceTypes []*cdp.Node
@@ -96,6 +93,7 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 			if err != nil {
 				slog.Error("reading table rows", "error", err)
 			}
+			slog.Info("loded rows", "page", currentPage)
 
 			for i := range streets {
 				var err error
@@ -137,16 +135,26 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 			isDisabled := utils.Any(lastClasses, func(cls string) bool {
 				return cls == "ui-state-disabled"
 			})
+			slog.Info("checked last", "page", currentPage, "isDisabled", isDisabled)
 
 			if isDisabled {
 				close(channel)
 				break
 			}
 
+			pageSelector := fmt.Sprintf(".ui-paginator-page.ui-state-active:nth-child(%v)", currentPage+1)
+			slog.Info("made page selector", "page", currentPage, "selector", pageSelector)
 			err = chromedp.Run(
 				r.ctx,
 				chromedp.Click(".ui-paginator-next"),
 			)
+      time.Sleep(300 * time.Millisecond)
+			if err != nil {
+				slog.Error("going to next page", "error", err)
+			}
+
+			currentPage += 1
+			slog.Info("got to next page", "page", currentPage)
 		}
 	}
 

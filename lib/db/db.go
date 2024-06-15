@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/gin-gonic/gin/binding"
+	"github.com/kn-kraken/hackwarsaw-fintech/lib/mapaum"
 	_ "github.com/lib/pq"
 	"golang.org/x/exp/maps"
 )
@@ -120,6 +121,41 @@ ORDER BY distance;
 	return result, nil
 }
 
+func (r *Database) AddRealEstate(realEstate *mapaum.RealEstate) error {
+	const statement = `
+INSERT INTO real_estates
+  (address, occurance_type, area, initial_price, district)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING real_estate_id
+`
+	var id int
+	err := r.db.QueryRow(
+		statement,
+		realEstate.Address,
+		realEstate.OccuanceType,
+		realEstate.Area,
+		realEstate.InitialPrice,
+		realEstate.District,
+	).Scan(&id)
+	if err != nil {
+		return err
+	}
+
+	for i, destination := range realEstate.Destinations {
+		const statement = `
+INSERT INTO real_estate_destinations
+  (real_estate_id, num, destination)
+VALUES ($1, $2, $3)
+`
+		_, err := r.db.Exec(statement, id, i, destination)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *Database) ListPolygons() ([]Polygon, error) {
 
 	const query = `
@@ -176,11 +212,11 @@ FROM
 
 		old, exists := result[name]
 		if exists {
-      println("exists")
+			println("exists")
 			old.Locations = append(old.Locations, location)
-      result[name] = old
+			result[name] = old
 		} else {
-      println("not")
+			println("not")
 			polygon := Polygon{
 				Id:        id,
 				Name:      name,
