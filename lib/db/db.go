@@ -80,7 +80,21 @@ WHERE
         $3
     )
     AND name != ''
-    AND UPPER(shop) = $4
+    AND UPPER(shop) IN (
+      'ALCOHOL',
+      'BAKERY',
+      'BAR',
+      'BUTCHER',
+      'CAFE',
+      'ELECTRONICS',
+      'GREENGROCER',
+      'HAIRDRESSER',
+      'LOCKSMITH',
+      'PET_GROOMING',
+      'RESTAURANT',
+      'SHOE_REPAIR',
+      'TAILOR'
+    )
 ORDER BY distance;
 `
 
@@ -88,7 +102,7 @@ ORDER BY distance;
 		fmt.Sprint(longitude),
 		fmt.Sprint(latitude),
 		fmt.Sprint(distance*1000),
-		businessType,
+		// businessType,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("running query: %w", err)
