@@ -29,7 +29,13 @@ func AddRoutes(r *gin.Engine, database *db.Database) {
 			return
 		}
 
-		c.JSON(http.StatusOK, NewRealEstateScores(businesses))
+		realEstates, err := database.ListRealEstates()
+		if err != nil {
+			slog.Error("listing real estates", "error", err)
+			return
+		}
+
+		c.JSON(http.StatusOK, NewRealEstateScores(businesses, realEstates))
 	})
 
 	r.GET("/polygons", func(c *gin.Context) {

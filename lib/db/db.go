@@ -156,6 +156,51 @@ VALUES ($1, $2, $3)
 	return nil
 }
 
+func (r *Database) ListRealEstates() ([]RealEstate, error) {
+	const query = `
+SELECT
+   real_estate_id,
+   address       ,
+   occurance_type,
+   area          ,
+   initial_price ,
+   district      
+FROM real_estates;
+`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("running query: %w", err)
+	}
+	defer rows.Close()
+
+	var result []RealEstate
+	for rows.Next() {
+		var realEstate RealEstate
+
+		err = rows.Scan(
+			&realEstate.Id,
+			&realEstate.Address,
+			&realEstate.OccuanceType,
+			&realEstate.Area,
+			&realEstate.InitialPrice,
+			&realEstate.District,
+		)
+		if err != nil {
+			slog.Error("scanning row", err)
+		}
+
+		err = binding.Validator.ValidateStruct(realEstate)
+		if err != nil {
+			slog.Error("validating", "error", err)
+			continue
+		}
+
+		result = append(result, realEstate)
+	}
+
+	return result, nil
+}
+
 func (r *Database) ListPolygons() ([]Polygon, error) {
 
 	const query = `

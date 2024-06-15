@@ -1,5 +1,14 @@
 package db
 
+type RealEstate = struct {
+	Id           string  `json:"id"`
+	Address      string  `json:"address"`
+	OccuanceType string  `json:"occurance_type"`
+	Area         float32 `json:"area"`
+	InitialPrice float32 `json:"initial_price"`
+	District     string  `json:"district"`
+}
+
 type Polygon struct {
 	Id        int        `json:"osm_int"`
 	Name      string     `json:"name"`
