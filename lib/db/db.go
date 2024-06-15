@@ -54,7 +54,12 @@ func (r *Database) Close() {
 	r.db.Close()
 }
 
-func (r *Database) ListBusinessesInArea(btype BusinessType) ([]Business, error) {
+func (r *Database) ListBusinessesInArea(
+	businessType BusinessType,
+	longitude float32,
+	latitude float32,
+	distance float32,
+) ([]Business, error) {
 	const query = `
 SELECT
     name,
@@ -62,22 +67,27 @@ SELECT
     ST_X(ST_Transform(way, 4326)) AS lon,
     ST_Y(ST_Transform(way, 4326)) AS lat,
     ST_Distance(
-        ST_SetSRID(ST_MakePoint(21.045535, 52.256403), 4326),
+        ST_SetSRID(ST_MakePoint($1, $2), 4326),
         ST_Transform(way, 4326)
     ) AS distance
 FROM planet_osm_point
 WHERE
     ST_DWithin(
-        ST_SetSRID(ST_MakePoint(21.045535, 52.256403), 4326),
+        ST_SetSRID(ST_MakePoint($1, $2), 4326),
         ST_Transform(way, 4326),
-        1000
+        $3
     )
     AND name != ''
-    AND UPPER(shop) = $1
+    AND UPPER(shop) = $4
 ORDER BY distance;
 `
 
-	rows, err := r.db.Query(query, btype)
+	rows, err := r.db.Query(query,
+		fmt.Sprint(longitude),
+		fmt.Sprint(latitude),
+		fmt.Sprint(distance*1000),
+		businessType,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("running query: %w", err)
 	}
@@ -100,7 +110,7 @@ ORDER BY distance;
 		err = binding.Validator.ValidateStruct(business)
 		if err != nil {
 			slog.Error("validating", "error", err)
-      continue
+			continue
 		}
 
 		result = append(result, business)

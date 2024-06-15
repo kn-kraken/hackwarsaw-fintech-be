@@ -10,15 +10,20 @@ import (
 
 func AddRoutes(r *gin.Engine, database *db.Database) {
 	r.GET("/real-estates", func(c *gin.Context) {
-    var req RealEstateScoresRequest
-    
-    err := c.Bind(&req)
-		if err != nil {
+		var req RealEstateScoresRequest
+
+		if err := c.ShouldBind(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			slog.Error("validating request", "error", err)
 			return
 		}
 
-		businesses, err := database.ListBusinessesInArea(req.BusinessType)
+		businesses, err := database.ListBusinessesInArea(
+			req.BusinessType,
+			req.Longitude,
+			req.Latitude,
+			req.Distance,
+		)
 		if err != nil {
 			slog.Error("listing businesses in area", "error", err)
 			return

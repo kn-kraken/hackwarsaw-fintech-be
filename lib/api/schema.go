@@ -6,7 +6,10 @@ import (
 )
 
 type RealEstateScoresRequest struct {
-  BusinessType db.BusinessType `form:"business" binding:"required,enum"`
+	BusinessType db.BusinessType `form:"business" binding:"required,enum"`
+	Longitude    float32         `form:"longitude" binding:"required,gte=-180,lte=180"`
+	Latitude     float32         `form:"latitude" binding:"required,gte=-90,lte=90"`
+	Distance     float32         `form:"range" binding:"required,gt=0"`
 }
 
 type RealEstateScores struct {
