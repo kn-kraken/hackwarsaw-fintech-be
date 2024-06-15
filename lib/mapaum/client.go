@@ -2,7 +2,6 @@ package mapaum
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
@@ -57,7 +56,7 @@ func (r *Client) ListRealEstates(page int, pageSize int) (*goquery.Selection, er
 
 	err := r.bow.PostForm("https://mapa.um.warszawa.pl/mapaApp1/faces/oferty/ofertySprzedaz.xhtml", form)
 	if err != nil {
-		log.Fatal(err)
+    return nil, err
 	}
 
   return r.bow.Dom(), nil

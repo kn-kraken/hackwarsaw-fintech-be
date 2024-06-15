@@ -1,3 +1,5 @@
 package mapaum
 
-type RealEstate = struct {}
+type RealEstate = struct {
+
+}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/mapaum"
 )
@@ -9,12 +9,12 @@ import (
 func main() {
 	client, err := mapaum.New()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("creating scrapper", err)
 	}
 
   dom, err := client.ListRealEstates(0, 100)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("listing real estates", "error", err)
 	}
 
   println(dom.Text())
