@@ -12,5 +12,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client.ListRealEstates(0, 100)
+  dom, err := client.ListRealEstates(0, 100)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+  println(dom.Text())
 }
