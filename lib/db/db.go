@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin/binding"
 	_ "github.com/lib/pq"
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -117,4 +118,77 @@ ORDER BY distance;
 	}
 
 	return result, nil
+}
+
+func (r *Database) ListPolygons() ([]Polygon, error) {
+
+	const query = `
+WITH warsaw_boundary AS (
+    SELECT
+        way AS geom
+    FROM
+        planet_osm_polygon
+    WHERE
+        name = 'Warszawa'
+        AND boundary = 'administrative'
+        AND admin_level = '6'
+),
+vertices AS (
+    SELECT
+        osm_id,
+        name,
+        (ST_DumpPoints(way)).geom AS vertex
+    FROM
+        planet_osm_polygon, warsaw_boundary
+    WHERE
+        boundary = 'administrative'
+        AND admin_level = '8'
+        AND ST_Intersects(way, warsaw_boundary.geom)
+)
+SELECT
+    osm_id,
+    name,
+    ST_X(vertex) AS longitude,
+    ST_Y(vertex) AS latitude
+FROM
+    vertices;
+`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("running query: %w", err)
+	}
+	defer rows.Close()
+
+	result := make(map[string]Polygon)
+	for rows.Next() {
+		var id int
+		var name string
+		var longitude float32
+		var latitude float32
+
+		err = rows.Scan(&id, &name, &longitude, &latitude)
+		if err != nil {
+			slog.Error("scanning row", err)
+		}
+
+		location := Location{Longitude: longitude, Latitude: latitude}
+
+		old, exists := result[name]
+		if exists {
+      println("exists")
+			old.Locations = append(old.Locations, location)
+      result[name] = old
+		} else {
+      println("not")
+			polygon := Polygon{
+				Id:        id,
+				Name:      name,
+				Locations: []Location{location},
+			}
+			result[name] = polygon
+		}
+	}
+
+	return maps.Values(result), nil
 }

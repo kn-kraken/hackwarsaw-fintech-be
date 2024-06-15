@@ -1,5 +1,11 @@
 package db
 
+type Polygon struct {
+	Id        int        `json:"osm_int"`
+	Name      string     `json:"name"`
+	Locations []Location `json:"coordinates"`
+}
+
 type Business struct {
 	Name     string
 	Type     BusinessType `binding:"enum"`
@@ -8,8 +14,8 @@ type Business struct {
 }
 
 type Location struct {
-	Longitude float32
-	Latitude  float32
+	Longitude float32 `json:"longitude"`
+	Latitude  float32 `json:"latitude"`
 }
 
 type BusinessType string
