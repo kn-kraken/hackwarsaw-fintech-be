@@ -1,63 +1,91 @@
 package mapaum
 
 import (
+	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/headzoo/surf"
-	"github.com/headzoo/surf/browser"
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/chromedp"
+)
+
+const (
+	URL = "https://mapa.um.warszawa.pl/mapaApp1/faces/oferty/ofertyWynajem.xhtml?lang=pl"
 )
 
 type Client struct {
-	bow       *browser.Browser
-	viewState string
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func New() (*Client, error) {
-	bow := surf.NewBrowser()
+	ctx, cancel := chromedp.NewContext(context.Background())
 
-	err := bow.Open("https://mapa.um.warszawa.pl/mapaApp1/faces/oferty/ofertySprzedaz.xhtml?lang=pl")
+	err := chromedp.Run(
+		ctx,
+		chromedp.Navigate(URL),
+		chromedp.WaitReady("input[name=javax\\.faces\\.ViewState]"),
+	)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	var viewStateNode = bow.Dom().Find("input[name=javax\\.faces\\.ViewState]")
-
-	viewState, exists := viewStateNode.First().Attr("value")
-	if !exists {
-		panic("viewstate not exists")
-	}
-
-	client := &Client{bow: bow, viewState: viewState}
+	client := &Client{ctx, cancel}
 	return client, nil
 }
 
-func (r *Client) ListRealEstates(page int, pageSize int) (*goquery.Selection, error) {
-	form := url.Values{}
-	form.Add("javax.faces.partial.ajax", "true")
-	form.Add("javax.faces.source", "form1:dataTable1")
-	form.Add("javax.faces.partial.execute", "form1:dataTable1")
-	form.Add("javax.faces.partial.render", "form1:dataTable1")
-	form.Add("form1:dataTable1", "form1:dataTable1")
-	form.Add("form1:dataTable1_pagination", "true")
-	form.Add("form1:dataTable1_first", fmt.Sprint(page*pageSize))
-	form.Add("form1:dataTable1_rows", fmt.Sprint(pageSize))
-	form.Add("form1:dataTable1_encodeFeature", "true")
-	form.Add("form1", "form1")
-	form.Add("form1:dataTable:j_idt11:filter", "")
-	form.Add("form1:dataTable:j_idt15:filter", "")
-	form.Add("form1:dataTable:j_idt17:filter", "")
-	form.Add("form1:dataTable:j_idt21:filter", "")
-	form.Add("form1:dataTable:j_idt23:filter", "")
-	form.Add("form1:dataTable1_selection", "8712")
-	form.Add("form1:dataTable1_scrollState", "0,0")
-	form.Add("javax.faces.ViewState", r.viewState)
+func (r *Client) Close() {
+	r.cancel()
+}
 
-	err := r.bow.PostForm("https://mapa.um.warszawa.pl/mapaApp1/faces/oferty/ofertySprzedaz.xhtml", form)
+func (r *Client) ListRealEstates() (*goquery.Selection, error) {
+	var currentPage string
+
+	err := chromedp.Run(
+		r.ctx,
+		chromedp.WaitVisible(".ui-paginator-page.ui-state-active"),
+		chromedp.Text(".ui-paginator-page.ui-state-active", &currentPage),
+	)
 	if err != nil {
-    return nil, err
+		return nil, fmt.Errorf("reading page: %w", err)
 	}
 
-  return r.bow.Dom(), nil
+	if currentPage != "1" {
+		err = chromedp.Run(
+			r.ctx,
+			chromedp.Click(".ui-paginator-first"),
+			chromedp.Value(".ui-paginator-page.ui-state-active", &currentPage),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("skipping to first page: %w", err)
+		}
+	}
+
+	var streets []*cdp.Node
+	var occurenceTypes []*cdp.Node
+	var destinations []*cdp.Node
+	var areas []*cdp.Node
+	var initialPrices []*cdp.Node
+	var districts []*cdp.Node
+	err = chromedp.Run(
+		r.ctx,
+    chromedp.Nodes("tr.ui-widget-content>td:nth-child(1)", &streets),
+    chromedp.Nodes("tr.ui-widget-content>td:nth-child(2)", &occurenceTypes),
+    chromedp.Nodes("tr.ui-widget-content>td:nth-child(3) li.ui-datalist-item", &destinations),
+    chromedp.Nodes("tr.ui-widget-content>td:nth-child(4)", &areas),
+    chromedp.Nodes("tr.ui-widget-content>td:nth-child(5)", &initialPrices),
+    chromedp.Nodes("tr.ui-widget-content>td:nth-child(6)", &districts),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("reading table rows: %w", err)
+	}
+
+  println(streets[0].Children[0].NodeValue)
+  println(occurenceTypes[0].Children[0].NodeValue)
+  println(destinations[0].Children[0].Children[0].NodeValue)
+  println(areas[0].Children[0].NodeValue)
+  println(initialPrices[0].Children[0].NodeValue)
+  println(districts[0].Children[0].NodeValue)
+
+	return nil, nil
 }

@@ -11,11 +11,13 @@ func main() {
 	if err != nil {
 		slog.Error("creating scrapper", err)
 	}
+	_ = client
 
-  dom, err := client.ListRealEstates(0, 100)
+	_, err = client.ListRealEstates()
 	if err != nil {
 		slog.Error("listing real estates", "error", err)
 	}
 
-  println(dom.Text())
+	// _ = dom
+	// println(dom.Text())
 }

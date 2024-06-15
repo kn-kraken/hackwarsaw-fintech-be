@@ -16,6 +16,9 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/bytedance/sonic v1.11.8 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/chromedp/cdproto v0.0.0-20240202021202-6d0b6a386732 // indirect
+	github.com/chromedp/chromedp v0.9.5 // indirect
+	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
@@ -32,12 +35,16 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.22.0 // indirect
 	github.com/go-rod/rod v0.114.1 // indirect
+	github.com/gobwas/httphead v0.1.0 // indirect
+	github.com/gobwas/pool v0.2.1 // indirect
+	github.com/gobwas/ws v1.3.2 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hdm/jarm-go v0.0.7 // indirect
 	github.com/headzoo/surf v1.0.1 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kataras/jwt v0.1.8 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
@@ -47,6 +54,7 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/lukasbob/srcset v0.0.0-20190730101422-86b742e617f3 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.25 // indirect
