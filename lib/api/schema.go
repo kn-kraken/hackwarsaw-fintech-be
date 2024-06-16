@@ -1,6 +1,8 @@
 package api
 
 import (
+	"slices"
+
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/db"
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/utils"
 )
@@ -38,9 +40,18 @@ type RealEstate struct {
 	Distance float32  `json:"distance"`
 }
 
-func NewRealEstateScores(businesses []db.Business, realEstates []db.RealEstate) RealEstateScores {
+func NewRealEstateScores(businesses []db.Business, realEstates []db.RealEstate, scores []float32) RealEstateScores {
 	businessesDto := utils.MapRef(businesses, NewBusiness)
-	realEstatesDto := utils.MapRef(realEstates, NewRealEstate)
+	realEstatesDto := utils.MapRef2(realEstates, scores, NewRealEstate)
+  slices.SortFunc(realEstatesDto, func(first RealEstate, second RealEstate) int {
+    if (first.Score > second.Score) {
+      return -1
+    } else if (first.Score == second.Score) {
+      return 0
+    } else {
+      return 1
+    }
+  })
 	return RealEstateScores{
 		Businesses:  businessesDto,
 		RealEstates: realEstatesDto,
@@ -64,12 +75,12 @@ func NewLocation(location db.Location) Location {
 	}
 }
 
-func NewRealEstate(realEstate *db.RealEstate) RealEstate {
+func NewRealEstate(realEstate *db.RealEstate, score *float32) RealEstate {
 	return RealEstate{
 		Address:  realEstate.Address,
-		Score:    0.54,
+		Score:    *score,
 		Area:     realEstate.Area,
 		Location: NewLocation(realEstate.Location),
-    Distance: realEstate.Distance,
+		Distance: realEstate.Distance,
 	}
 }

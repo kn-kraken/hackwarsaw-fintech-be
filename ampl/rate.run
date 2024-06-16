@@ -1,0 +1,31 @@
+reset;
+
+option solver cplex;
+option solver_msg 0;
+model ampl/rate.mod;
+data ampl/rate.dat;
+
+let RealEstatesOmitted := {};
+let ASPIRATION["dist"] := 1;
+let ASPIRATION["crime_ratio"] := 0.2;
+let LAMBDA["dist"] := 1;
+let LAMBDA["crime_ratio"] := 10;
+
+var chosen_i := 0;
+var current_rank := 1;
+var ranks{RealEstates};
+var scores{RealEstates};
+
+for {1..N_REAL_ESTATES} {
+  solve >/dev/null;
+
+  let chosen_i := sum{r in RealEstates : chosen[r] == 1} r;
+  let ranks[chosen_i] := current_rank;
+  let scores[chosen_i] := reference_point_criterium;
+  let current_rank := current_rank + 1;
+
+  let RealEstatesOmitted := RealEstatesOmitted union {chosen_i};
+}
+
+display ranks, scores, DIST_MAX, CRIME_RATIO;
+

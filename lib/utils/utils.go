@@ -16,6 +16,14 @@ func MapRef[T, V any](ts []T, fn func(*T) V) []V {
     return result
 }
 
+func MapRef2[T1, T2, V any](t1s []T1, t2s []T2, fn func(*T1, *T2) V) []V {
+    result := make([]V, len(t1s))
+    for i, t := range t1s {
+        result[i] = fn(&t, &t2s[i])
+    }
+    return result
+}
+
 func Any[T any](ts []T, fn func(T) bool) bool {
     for _, t := range ts {
         if fn(t) {
