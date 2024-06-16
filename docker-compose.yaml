@@ -12,5 +12,19 @@ services:
       - "5432:5432"
     volumes:
       - postgis_data:/var/lib/postgresql/data
+  be:
+    build: .
+    image: jostrzol/hackwarsaw-fintech-be
+    container_name: hackwarsaw-fintech-be
+    environment:
+      DB_HOST: "postgis"
+      DB_PORT: "5432"
+      DB_NAME: "gis"
+      DB_USER: "gisuser"
+      DB_PASSWORD: "gispassword"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgis
 volumes:
   postgis_data:
