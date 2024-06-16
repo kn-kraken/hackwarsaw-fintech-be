@@ -2,6 +2,9 @@
 
 ## Depencencies
 
+* `ampl`
+* `docker`
+* `docker-compose`
 * `go 1.22.4`
 * `just`
 

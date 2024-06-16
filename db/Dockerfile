@@ -21,6 +21,7 @@ RUN mkdir -p /osmdata
 
 # Copy the OSM data file and the script to load OSM data
 COPY mazowieckie-latest.osm.pbf /osmdata/
+RUN echo "(sleep 10 && osm2pgsql -d gis -U $POSTGRES_USER -H localhost -W -C 8192 --create /osmdata/mazowieckie-latest.osm.pbf) &" > /docker-entrypoint-initdb.d/99_load_osm.sh
 # COPY load_osm.sh /docker-entrypoint-initdb.d/
 
 # Make the script executable

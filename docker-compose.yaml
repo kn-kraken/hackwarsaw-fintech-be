@@ -2,6 +2,7 @@ version: "3.8"
 services:
   postgis:
     build: ./db
+    image: jostrzol/hackwarsaw-fintech-db
     container_name: masovian
     environment:
       POSTGRES_DB: gis
