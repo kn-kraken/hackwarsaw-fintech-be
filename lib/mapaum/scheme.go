@@ -7,4 +7,6 @@ type RealEstate = struct {
 	Area         float32
 	InitialPrice float32
 	District     string
+	Latitude     float32
+	Longitude    float32
 }

@@ -29,7 +29,11 @@ func AddRoutes(r *gin.Engine, database *db.Database) {
 			return
 		}
 
-		realEstates, err := database.ListRealEstates()
+		realEstates, err := database.ListRealEstates(
+			req.Longitude,
+			req.Latitude,
+			req.Distance,
+      )
 		if err != nil {
 			slog.Error("listing real estates", "error", err)
 			return

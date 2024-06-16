@@ -10,6 +10,7 @@ import (
 
 	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
+	"github.com/kelvins/geocoder"
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/utils"
 )
 
@@ -24,7 +25,7 @@ type Client struct {
 
 func New() (*Client, error) {
 	// ctx, _ := chromedp.NewExecAllocator(context.Background(), append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", false))...)
-  ctx := context.Background()
+	ctx := context.Background()
 	ctx, cancel := chromedp.NewContext(ctx)
 
 	err := chromedp.Run(
@@ -72,6 +73,7 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 	channel := make(chan (RealEstate), 1)
 
 	impl := func() {
+		var err error
 		for {
 			slog.Info("scrapping next page", "page", currentPage)
 
@@ -98,7 +100,8 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 			for i := range streets {
 				var err error
 				var realEstate RealEstate
-				realEstate.Address = streets[i].Children[0].NodeValue
+
+				realEstate.Address = strings.Split(streets[i].Children[0].NodeValue, "/")[0]
 				realEstate.OccuanceType = occurenceTypes[i].Children[0].NodeValue
 
 				for _, destination := range destinations[i].Children[0].Children {
@@ -114,7 +117,36 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 					slog.Error("parsing initial price", err)
 					continue
 				}
+
 				realEstate.District = districts[i].Children[0].NodeValue
+
+				var addressParts = strings.Split(realEstate.Address, " ")
+				var street string
+				var number int
+				if len(addressParts) >= 1 {
+					street = strings.Join(addressParts[:len(addressParts)-1], " ")
+				}
+				if len(addressParts) >= 2 {
+					number, err = strconv.Atoi(addressParts[len(addressParts)-1])
+					if err != nil {
+						slog.Error("parsing address' number", "number", addressParts[1])
+					}
+				}
+				address := geocoder.Address{
+					Street:   street,
+					Number:   number,
+					District: realEstate.District,
+					City:     "Warszawa",
+					Country:  "Poland",
+				}
+				loc, err := geocoder.Geocoding(address)
+				if err != nil {
+					slog.Error("geocoding", err)
+				}
+
+				realEstate.Longitude = float32(loc.Longitude)
+				realEstate.Latitude = float32(loc.Latitude)
+
 				channel <- realEstate
 			}
 
@@ -148,7 +180,7 @@ func (r *Client) ListRealEstates() (chan (RealEstate), error) {
 				r.ctx,
 				chromedp.Click(".ui-paginator-next"),
 			)
-      time.Sleep(300 * time.Millisecond)
+			time.Sleep(300 * time.Millisecond)
 			if err != nil {
 				slog.Error("going to next page", "error", err)
 			}

@@ -4,8 +4,12 @@ CREATE TABLE IF NOT EXISTS real_estates (
    occurance_type VARCHAR(200),
    area           DECIMAL,
    initial_price  DECIMAL,
+   latitude       DECIMAL,
+   longitude      DECIMAL,
    district       VARCHAR(200),
-   PRIMARY KEY(real_estate_id)
+   PRIMARY KEY(real_estate_id),
+   CONSTRAINT uk_address
+      UNIQUE (address)
 );
 
 CREATE TABLE IF NOT EXISTS real_estate_destinations (

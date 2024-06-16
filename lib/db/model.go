@@ -1,12 +1,13 @@
 package db
 
 type RealEstate = struct {
-	Id           string  `json:"id"`
-	Address      string  `json:"address"`
-	OccuanceType string  `json:"occurance_type"`
-	Area         float32 `json:"area"`
-	InitialPrice float32 `json:"initial_price"`
-	District     string  `json:"district"`
+	Id           string   `json:"id"`
+	Address      string   `json:"address"`
+	OccuanceType string   `json:"occurance_type"`
+	Area         float32  `json:"area"`
+	InitialPrice float32  `json:"initial_price"`
+	District     string   `json:"district"`
+	Location     Location `json:"location"`
 }
 
 type Polygon struct {

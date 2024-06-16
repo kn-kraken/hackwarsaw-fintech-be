@@ -1,8 +1,6 @@
 package api
 
 import (
-	"math/rand"
-
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/db"
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/utils"
 )
@@ -68,6 +66,6 @@ func NewRealEstate(realEstate *db.RealEstate) RealEstate {
 		Address:  realEstate.Address,
 		Score:    0.54,
 		Area:     realEstate.Area,
-		Location: Location{21.045058 + rand.Float32()/10, 52.2504 + rand.Float32()/10},
+		Location: NewLocation(realEstate.Location),
 	}
 }
