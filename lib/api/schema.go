@@ -22,6 +22,7 @@ type Business struct {
 	Type     db.BusinessType `json:"type"`
 	Location Location        `json:"location"`
 	Address  string          `json:"address"`
+	Distance float32         `json:"distance"`
 }
 
 type Location struct {
@@ -34,6 +35,7 @@ type RealEstate struct {
 	Score    float32  `json:"score"`
 	Area     float32  `json:"area"`
 	Location Location `json:"location"`
+	Distance float32  `json:"distance"`
 }
 
 func NewRealEstateScores(businesses []db.Business, realEstates []db.RealEstate) RealEstateScores {
@@ -51,6 +53,7 @@ func NewBusiness(business *db.Business) Business {
 		Type:     business.Type,
 		Location: NewLocation(business.Location),
 		Address:  "ul. Długa 123",
+		Distance: business.Distance,
 	}
 }
 
@@ -67,5 +70,6 @@ func NewRealEstate(realEstate *db.RealEstate) RealEstate {
 		Score:    0.54,
 		Area:     realEstate.Area,
 		Location: NewLocation(realEstate.Location),
+    Distance: realEstate.Distance,
 	}
 }

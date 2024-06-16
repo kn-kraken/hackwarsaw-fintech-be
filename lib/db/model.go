@@ -8,6 +8,7 @@ type RealEstate = struct {
 	InitialPrice float32  `json:"initial_price"`
 	District     string   `json:"district"`
 	Location     Location `json:"location"`
+	Distance     float32  `json:"distance"`
 }
 
 type Polygon struct {

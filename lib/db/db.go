@@ -71,13 +71,13 @@ SELECT
     ST_Distance(
         ST_SetSRID(ST_MakePoint($1, $2), 4326),
         ST_Transform(way, 4326)
-    ) AS distance
+    ) * 100 AS distance
 FROM planet_osm_point
 WHERE
     ST_DWithin(
         ST_SetSRID(ST_MakePoint($1, $2), 4326),
         ST_Transform(way, 4326),
-        $3
+        $3 * 0.01
     )
     AND name != ''
     AND UPPER(shop) = $4
@@ -102,7 +102,7 @@ ORDER BY distance;
 	rows, err := r.db.Query(query,
 		fmt.Sprint(longitude),
 		fmt.Sprint(latitude),
-		fmt.Sprint(distance*0.01),
+		fmt.Sprint(distance),
 		businessType,
 	)
 	if err != nil {
@@ -191,7 +191,11 @@ SELECT
    initial_price ,
    district      ,
    longitude     ,
-   latitude      
+   latitude      ,
+   acos(
+       sin(radians(latitude))*sin(radians($2))
+       +cos(radians(latitude))*cos(radians($2))*cos(radians($1-longitude))
+   )*6371 as distance
 FROM real_estates
 WHERE acos(
     sin(radians(latitude))*sin(radians($2))
@@ -217,6 +221,7 @@ WHERE acos(
 			&realEstate.District,
 			&realEstate.Location.Longitude,
 			&realEstate.Location.Latitude,
+			&realEstate.Distance,
 		)
 		if err != nil {
 			slog.Error("scanning row", err)
