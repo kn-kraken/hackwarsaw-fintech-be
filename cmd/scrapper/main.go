@@ -10,18 +10,36 @@ import (
 	"github.com/kn-kraken/hackwarsaw-fintech/lib/mapaum"
 )
 
-var geocodingApiKey string
+var (
+	dbhost          string
+	dbport          int
+	dbname          string
+	dbuser          string
+	dbpassword      string
+	geocodingApiKey string
+)
 
 func main() {
+	flag.StringVar(&dbhost, "dbhost", "localhost", "db host")
+	flag.IntVar(&dbport, "dbport", 5432, "db port")
+	flag.StringVar(&dbname, "dbname", "gis", "db name")
+	flag.StringVar(&dbuser, "dbuser", "gisuser", "db user")
+	flag.StringVar(&dbpassword, "dbpassword", "gispassword", "db password")
 	flag.StringVar(&geocodingApiKey, "geocoding-apikey", "", "Google's Geocoding API key")
-  flag.Parse()
+	flag.Parse()
 
 	if geocodingApiKey == "" {
 		log.Fatal("required parameter -geocoding-apikey not set")
 	}
-  geocoder.ApiKey = geocodingApiKey
+	geocoder.ApiKey = geocodingApiKey
 
-	db, err := db.New()
+	db, err := db.New(
+		dbhost,
+		dbport,
+		dbname,
+		dbuser,
+		dbpassword,
+	)
 	if err != nil {
 		slog.Error("creating db", err)
 	}
@@ -30,7 +48,6 @@ func main() {
 	if err != nil {
 		slog.Error("creating scrapper", err)
 	}
-	_ = client
 
 	channel, err := client.ListRealEstates()
 	if err != nil {
@@ -42,9 +59,5 @@ func main() {
 		if err != nil {
 			slog.Error("saving real estate", "error", err)
 		}
-		// fmt.Printf("%#v", realEstate)
 	}
-
-	// _ = dom
-	// println(dom.Text())
 }

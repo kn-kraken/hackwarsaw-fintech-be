@@ -11,19 +11,17 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-const (
-	host     = "localhost"
-	port     = 5432
-	dbname   = "gis"
-	user     = "gisuser"
-	password = "gispassword"
-)
-
 type Database struct {
 	db *sql.DB
 }
 
-func New() (*Database, error) {
+func New(
+	host string,
+	port int,
+	dbname string,
+	user string,
+	password string,
+) (*Database, error) {
 	psqlconn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host,
