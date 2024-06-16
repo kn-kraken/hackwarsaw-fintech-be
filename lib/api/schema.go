@@ -26,8 +26,8 @@ type Business struct {
 }
 
 type Location struct {
-	Longitude float32 `json:"longitude"`
-	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"lng"`
+	Latitude  float32 `json:"lat"`
 }
 
 type RealEstate struct {
