@@ -242,6 +242,7 @@ WHERE acos(
 func (r *Database) ListPolygons() ([]Polygon, error) {
 
 	const query = `
+-- Step 1: Find the boundary of Warsaw
 WITH warsaw_boundary AS (
     SELECT
         way AS geom
@@ -252,23 +253,28 @@ WITH warsaw_boundary AS (
         AND boundary = 'administrative'
         AND admin_level = '6'
 ),
+
+-- Step 2: Extract vertices from electoral districts within Warsaw
 vertices AS (
     SELECT
         osm_id,
-        name,
-        ST_Transform((ST_DumpPoints(way)).geom, 4326) AS geom_4326  -- Convert to EPSG:4326 geometry
+        name AS district_name,
+        ST_X(ST_Transform((ST_DumpPoints(way)).geom, 4326)) AS longitude,
+        ST_Y(ST_Transform((ST_DumpPoints(way)).geom, 4326)) AS latitude
     FROM
         planet_osm_polygon p, warsaw_boundary w
     WHERE
         p.boundary = 'administrative'
-        AND p.admin_level = '8'
+        AND p.admin_level = '9'
         AND ST_Intersects(p.way, w.geom)
 )
+
+-- Step 3: Select vertices' coordinates and format as JSON-like structure
 SELECT
-    osm_id,
-    name,
-    ST_X(geom_4326) AS longitude,
-    ST_Y(geom_4326) AS latitude
+      osm_id,
+      district_name,
+      longitude,
+      latitude
 FROM
     vertices;
 `
